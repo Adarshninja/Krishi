@@ -357,7 +357,7 @@ async function sendFarmerMessage(userText) {
 
   for (const port of portsToTry) {
     try {
-      const response = await fetch(`http://localhost:${port}/api/chat`, {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
