@@ -1,6 +1,3 @@
-// ==========================================
-// Krishi Sahayak - Vercel + Express Backend
-// ==========================================
 
 import express from "express";
 import cors from "cors";
@@ -36,7 +33,7 @@ app.use(express.json());
 // js/
 // pages/
 // images, etc.
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, "public")));
 
 // ==========================================
 // GROQ API KEY
@@ -68,11 +65,8 @@ const groq = apiKey
 
 // Open website → show Krishi Sahayak UI
 app.get("/", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "index.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
 
 // ==========================================
 // HEALTH CHECK
