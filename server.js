@@ -318,94 +318,80 @@ RULES FOR ANSWERING:
 // ==========================================
 // MANDI / DATA.GOV.IN API
 // ==========================================
+// ==========================================
+// MANDI / DATA.GOV.IN API
+// ==========================================
 
-const DATA_GOV_API_KEY = (
-    process.env.DATA_GOV_API_KEY || ""
-).trim();
+const DATA_GOV_API_KEY = (process.env.DATA_GOV_API_KEY || "")
+    .trim()
+    .replace(/^["']|["']$/g, "");
 
 const MANDI_API_URL =
     "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
 
-
 app.get("/api/mandi", async (req, res) => {
+    const commodity = req.query.commodity || "Wheat";
+    const state = req.query.state || "Uttar Pradesh";
 
     try {
-
         if (!DATA_GOV_API_KEY) {
-
-            console.error(
-                "❌ DATA_GOV_API_KEY is not configured."
-            );
+            console.error("❌ DATA_GOV_API_KEY is missing");
 
             return res.status(500).json({
                 error: "DATA_GOV_API_KEY is not configured."
             });
-
         }
 
-        const commodity =
-            req.query.commodity || "Wheat";
+        const params = new URLSearchParams({
+            "api-key": DATA_GOV_API_KEY,
+            "format": "json",
+            "limit": "50",
+            "filters[state]": state,
+            "filters[commodity]": commodity
+        });
 
-        const params = new URLSearchParams();
+        const url = `${MANDI_API_URL}?${params.toString()}`;
 
-        params.set(
-            "api-key",
-            DATA_GOV_API_KEY
-        );
+        console.log("📊 Mandi request:", commodity, state);
 
-        params.set(
-            "format",
-            "json"
-        );
+        const response = await fetch(url);
 
-        params.set(
-            "filters[commodity]",
-            commodity
-        );
+        const text = await response.text();
 
-        const url =
-            `${MANDI_API_URL}?${params.toString()}`;
-
-        console.log(
-            `📊 Fetching Mandi data for: ${commodity}`
-        );
-
-        const response =
-            await fetch(url);
-
-        const data =
-            await response.json();
+        console.log("📊 Data.gov status:", response.status);
+        console.log("📊 Data.gov response:", text.slice(0, 500));
 
         if (!response.ok) {
+            return res.status(response.status).json({
+                error: "Data.gov.in request failed.",
+                status: response.status,
+                details: text.slice(0, 1000)
+            });
+        }
 
-            console.error(
-                "❌ Data.gov.in error:",
-                response.status,
-                data
-            );
+        let data;
 
-            return res.status(
-                response.status
-            ).json({
-                error:
-                    "Data.gov.in request failed.",
-                details: data
+        try {
+            data = JSON.parse(text);
+        } catch {
+            return res.status(502).json({
+                error: "Data.gov.in returned invalid JSON.",
+                details: text.slice(0, 1000)
             });
         }
 
         return res.json(data);
 
     } catch (error) {
-    console.error("❌ Mandi API error:", error);
+        console.error("❌ Mandi fetch error:", error);
 
-    return res.status(500).json({
-        error: "Failed to fetch Mandi data.",
-        details: error.message
-    });
-}
-
+        return res.status(500).json({
+            error: "Failed to fetch Mandi data.",
+            message: error?.message || "Unknown error",
+            cause: error?.cause?.message || null
+        });
+    }
 });
-
 
 // ==========================================
 // 404 API HANDLER
