@@ -250,7 +250,8 @@ RULES FOR ANSWERING:
         const chatCompletion =
             await groq.chat.completions.create({
 
-                model: "groq/compound-mini",
+                // model: "groq/compound-mini",
+                model: "openai/gpt-oss-120b",
 
                 messages:
                     formattedMessages,
