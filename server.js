@@ -396,17 +396,13 @@ app.get("/api/mandi", async (req, res) => {
         return res.json(data);
 
     } catch (error) {
+    console.error("❌ Mandi API error:", error);
 
-        console.error(
-            "❌ Mandi API error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            error:
-                "Failed to fetch Mandi data."
-        });
-    }
+    return res.status(500).json({
+        error: "Failed to fetch Mandi data.",
+        details: error.message
+    });
+}
 
 });
 
