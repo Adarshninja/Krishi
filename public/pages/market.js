@@ -196,12 +196,13 @@ async function fetchLiveData() {
   if (cropTitle) cropTitle.textContent = `${crop} Price Trends in ${state}`;
   if (loader) loader.classList.remove('hidden');
 
-  const config = window.CONFIG || {};
-  const apiUrl = config.MANDI_API_URL || "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
-  const apiKey = config.DATA_GOV_API_KEY || "";
+  // const config = window.CONFIG || {};
+  // const apiUrl = config.MANDI_API_URL || "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
+  // const apiKey = config.DATA_GOV_API_KEY || "";
 
   try {
-    const endpoint = `${apiUrl}?api-key=${apiKey}&format=json&limit=50&filters[state]=${encodeURIComponent(state)}&filters[commodity]=${encodeURIComponent(crop)}`;
+    const endpoint =
+  `/api/mandi?commodity=${encodeURIComponent(crop)}&state=${encodeURIComponent(state)}`;
     const response = await fetch(endpoint);
 
     if (!response.ok) {
@@ -209,7 +210,7 @@ async function fetchLiveData() {
     }
 
     const result = await response.json();
-    const fetchedRecords = result.records || [];
+    const fetchedRecords = Array.isArray(result.records) ? result.records : [];
 
     if (fetchedRecords.length > 0) {
       allRecords = fetchedRecords;

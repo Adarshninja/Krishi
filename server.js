@@ -316,6 +316,102 @@ RULES FOR ANSWERING:
 
 
 // ==========================================
+// MANDI / DATA.GOV.IN API
+// ==========================================
+
+const DATA_GOV_API_KEY = (
+    process.env.DATA_GOV_API_KEY || ""
+).trim();
+
+const MANDI_API_URL =
+    "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
+
+
+app.get("/api/mandi", async (req, res) => {
+
+    try {
+
+        if (!DATA_GOV_API_KEY) {
+
+            console.error(
+                "❌ DATA_GOV_API_KEY is not configured."
+            );
+
+            return res.status(500).json({
+                error: "DATA_GOV_API_KEY is not configured."
+            });
+
+        }
+
+        const commodity =
+            req.query.commodity || "Wheat";
+
+        const params = new URLSearchParams();
+
+        params.set(
+            "api-key",
+            DATA_GOV_API_KEY
+        );
+
+        params.set(
+            "format",
+            "json"
+        );
+
+        params.set(
+            "filters[commodity]",
+            commodity
+        );
+
+        const url =
+            `${MANDI_API_URL}?${params.toString()}`;
+
+        console.log(
+            `📊 Fetching Mandi data for: ${commodity}`
+        );
+
+        const response =
+            await fetch(url);
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            console.error(
+                "❌ Data.gov.in error:",
+                response.status,
+                data
+            );
+
+            return res.status(
+                response.status
+            ).json({
+                error:
+                    "Data.gov.in request failed.",
+                details: data
+            });
+        }
+
+        return res.json(data);
+
+    } catch (error) {
+
+        console.error(
+            "❌ Mandi API error:",
+            error.message
+        );
+
+        return res.status(500).json({
+            error:
+                "Failed to fetch Mandi data."
+        });
+    }
+
+});
+
+
+// ==========================================
 // 404 API HANDLER
 // ==========================================
 
